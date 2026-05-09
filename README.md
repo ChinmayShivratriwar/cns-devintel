@@ -20,20 +20,20 @@ All tools accept either:
 
 ## Usage with Claude Desktop
 
-Add to your `claude_desktop_config.json`:
+Add to your `mcp.json`:
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "cns-devintel": {
       "type": "sse",
-      "url": "https://your-render-url.onrender.com/sse"
+      "url": "https://cns-devintel.onrender.com/sse"
     }
   }
 }
 ```
 
-Then ask Claude:
+Then ask copilot:
 - *"Analyse the security posture of https://github.com/user/my-api"*
 - *"Find all REST endpoints in this Spring Boot project: https://github.com/..."*
 - *"Run a full analysis on my project and tell me what to fix first"*
