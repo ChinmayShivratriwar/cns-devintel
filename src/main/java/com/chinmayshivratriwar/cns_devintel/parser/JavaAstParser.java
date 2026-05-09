@@ -1,6 +1,7 @@
 package com.chinmayshivratriwar.cns_devintel.parser;
 
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import org.springframework.stereotype.Component;
 
@@ -9,8 +10,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Component  // added: needs to be a Spring bean
+@Component
 public class JavaAstParser {
+
+    private static final ParserConfiguration CONFIG = new ParserConfiguration()
+            .setLanguageLevel(ParserConfiguration.LanguageLevel.BLEEDING_EDGE);
 
     public List<CompilationUnit> parseProject(File root) {
         List<CompilationUnit> units = new ArrayList<>();
@@ -19,10 +23,12 @@ public class JavaAstParser {
 
         for (File file : files) {
             try {
-                CompilationUnit cu = StaticJavaParser.parse(file);
-                units.add(cu);
+                new JavaParser(CONFIG)
+                        .parse(file)
+                        .getResult()
+                        .ifPresent(units::add);
             } catch (Exception e) {
-                // skip broken files
+                // skip broken / unparseable files
             }
         }
 

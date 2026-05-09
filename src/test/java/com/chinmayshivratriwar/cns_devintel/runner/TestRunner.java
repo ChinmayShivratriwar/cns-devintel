@@ -16,9 +16,6 @@ public class TestRunner {
                 "E:/Academics/Projects/Spring Boot Projects/expense-tracker/expense-tracker"
         );
 
-        // =========================
-        // MANUAL WIRING
-        // =========================
 
         JavaAstParser parser = new JavaAstParser();
 
@@ -45,10 +42,7 @@ public class TestRunner {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        // =========================
-        // FULL REPORT
-        // =========================
-
+        //Report seen below is the final report which will be used for generating insights and recommendations
         AnalysisOrchestrator.FullReport report =
                 orchestrator.runFullAnalysis(projectPath);
 

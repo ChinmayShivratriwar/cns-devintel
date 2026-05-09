@@ -10,6 +10,8 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.Semaphore;
+
 /**
  * MCP Tool surface — these are the 5 methods the calling agent can invoke.
  *
@@ -41,7 +43,6 @@ public class SpringIntelTools {
     private final SourceResolver       sourceResolver;
     private final ObjectMapper         objectMapper;
 
-
     @Tool(description = """
             Maps all REST endpoints in a Spring Boot project.
             Returns a list of endpoints with HTTP method, full path, controller class, and handler method name.
@@ -55,7 +56,6 @@ public class SpringIntelTools {
                 orchestrator.mapEndpoints(path)
         ));
     }
-
 
     @Tool(description = """
             Detects potential N+1 query problems in a Spring Boot project.
@@ -128,6 +128,8 @@ public class SpringIntelTools {
         ));
     }
 
+    private static final Semaphore CONCURRENCY_GATE    = new Semaphore(3);
+    private static final int       GATE_TIMEOUT_SECONDS = 20;
 
     /**
      * WHY this wrapper exists:
@@ -140,7 +142,14 @@ public class SpringIntelTools {
      */
     private String execute(String source, AnalysisTask task) {
         ResolvedSource resolved = null;
+        boolean acquired = false;
         try {
+            // acquire a slot — block up to GATE_TIMEOUT_SECONDS, then fail cleanly
+            acquired = CONCURRENCY_GATE.tryAcquire(GATE_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+            if (!acquired) {
+                return errorJson("Server is busy — too many concurrent analysis requests. Please retry in a moment.");
+            }
+
             log.info("[cns-devintel] Resolving source: {}", source);
             resolved = sourceResolver.resolve(source);
 
@@ -148,14 +157,15 @@ public class SpringIntelTools {
             log.info("[cns-devintel] Analysis complete for: {}", source);
             return result;
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return errorJson("Request interrupted while waiting for a free analysis slot.");
         } catch (Exception e) {
             log.error("[cns-devintel] Analysis failed for: {} — {}", source, e.getMessage());
             return errorJson(e.getMessage());
         } finally {
-            // cleanup temp clone regardless of success or failure
-            if (resolved != null) {
-                sourceResolver.cleanup(resolved);
-            }
+            if (resolved != null) sourceResolver.cleanup(resolved);
+            if (acquired)         CONCURRENCY_GATE.release();
         }
     }
 

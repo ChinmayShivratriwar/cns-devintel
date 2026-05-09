@@ -24,7 +24,7 @@ import java.util.Set;
  * contains a loop (for/foreach/while) that calls a method on
  * a field whose type ends with "Repository" or whose name ends with "repo/repository".
  *
- * This is AST-level analysis — no symbol resolution — so it produces
+ * This is AST-level analysis, no symbol resolution, so it produces
  * conservative false-positives the caller's LLM can filter intelligently.
  */
 @Service

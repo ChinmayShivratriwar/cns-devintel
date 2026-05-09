@@ -19,7 +19,6 @@ public class AnalysisOrchestrator {
     private final TransactionalAnalyzerService transactionalAnalyzer;
     private final SecurityAnalyzerService securityAnalyzer;
 
-    // ─── individual tool entry points ────────────────────────────────────────
 
     public List<Endpoint> mapEndpoints(Path projectRoot) {
         List<CompilationUnit> units = parse(projectRoot);

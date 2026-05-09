@@ -20,7 +20,7 @@ import java.util.Set;
  * Missing @Transactional can cause:
  *  - No rollback on failure
  *  - LazyInitializationException on lazy-loaded associations
- *  - Dirty reads / lost updates under concurrent load
+ *  - Dirty reads or lost updates under concurrent load
  */
 @Service
 public class TransactionalAnalyzerService {
